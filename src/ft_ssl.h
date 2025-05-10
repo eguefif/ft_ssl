@@ -1,5 +1,6 @@
 #ifndef FT_SSL
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #define true 1
 #define false 0
@@ -33,6 +34,8 @@ int getCommand(char *);
 void printInvalidCommandError(char *command);
 
 void runMD5(Params params);
+
+void calculateMD5(char *digest, char *target);
 void runSHA256(Params params);
 
 #endif
