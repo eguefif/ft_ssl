@@ -49,12 +49,22 @@ void testPadTarget(void) {
     CU_ASSERT(length == size);
 }
 
+void testMakeOutput(void) {
+    char *digest = (char *)malloc(17);
+    u32 states[4] = {0x31323334, 0x41424344, 0x45464748, 0x61626364};
+    digest[16] = 0;
+    makeOutput(digest, states);
+    printf("\nresult %s\n", digest);
+    CU_ASSERT(strncpy(digest, "4321DCBAHGFEdcba", 16) == 0);
+}
+
 int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("Test MD5", 0, 0);
     CU_add_test(suite, "Test of calculateMD5", testMd5);
     CU_add_test(suite, "Test of getTargetPaddedSize", testGetPaddedTargetSize);
     CU_add_test(suite, "Test of testPadTarget", testPadTarget);
+    CU_add_test(suite, "Test of testMakeOutput", testMakeOutput);
     CU_basic_run_tests();
     CU_cleanup_registry();
     return 0;

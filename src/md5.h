@@ -11,4 +11,6 @@ u64 getPaddedTargetSize(u64 sizeInByte);
 void padTarget(MD5Data *data);
 void appendLength(MD5Data *data);
 void makeDigestFromPaddedTarget(char *digest, MD5Data *data);
+
+void makeOutput(char *digest, u32 *states);
 #endif
