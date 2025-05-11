@@ -8,7 +8,8 @@ void testMd5(void) {
 
     char *result = malloc(16);
     calculateMD5(result, target);
-    CU_ASSERT(strncmp(result, target, strlen(target)) == 0);
+    CU_ASSERT(strncmp(result, target, 16) == 0);
+    free(result);
 }
 
 // Test case took on https://www.geeksforgeeks.org/what-is-the-md5-algorithm/
@@ -50,7 +51,7 @@ void testPadTarget(void) {
 int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("Test MD5", 0, 0);
-    // CU_add_test(suite, "Test of calculateMD5", testMd5);
+    CU_add_test(suite, "Test of calculateMD5", testMd5);
     CU_add_test(suite, "Test of getTargetPaddedSize", testGetPaddedTargetSize);
     CU_add_test(suite, "Test of testPadTarget", testPadTarget);
     CU_basic_run_tests();
