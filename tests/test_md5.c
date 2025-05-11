@@ -19,30 +19,27 @@ void testGetPaddedTargetSize(void) {
 
 void testPadTarget(void) {
     u64 size = 1000 / 8;
-    char *target = (char *)malloc(size);
-    bzero(target, size);
-    printf("size %lu\n", size);
-    for (u64 i = 0; i < size - 1; i++) {
+    char *target = (char *)malloc(size + 1);
+    bzero(target, size + 1);
+    for (u64 i = 0; i < size; i++) {
         target[i] = 'a';
     }
     u64 paddedTargetSize = getPaddedTargetSize(strlen(target));
-    printf("size: %lu, padded size: %lu\n", size, paddedTargetSize);
     char *paddedTarget = (char *)malloc(paddedTargetSize);
-    padTarget(target, paddedTarget, size);
+    padTarget(target, paddedTarget, paddedTargetSize);
 
     // Check if first padded bit is 1
     CU_ASSERT(paddedTarget[size] == (char)128);
 
     // Check if the rest is 0 until length
-    // for (int i = size + 1; i < (paddedTargetSize - 8); i++) {
-    //    CU_ASSERT(paddedTarget[size] == (char)0);
-    //}
+    u64 counter = 0;
+    for (int i = size + 1; i < (paddedTargetSize - 8); i++) {
+        counter += (u64)paddedTarget[i];
+    }
+    CU_ASSERT(counter == 0);
 
     //// Check the length
-    u32 lowerLength = *(u32 *)(paddedTarget + paddedTargetSize - 8);
-    u32 higherLength = *(u32 *)(paddedTarget + paddedTargetSize - 4);
-    u64 length = lowerLength + ((u64)higherLength << 32);
-    printf("expected size :%lu, size: %lu\n", size, length);
+    u64 length = *(u64 *)(paddedTarget + paddedTargetSize - 8);
     CU_ASSERT(length == size);
 }
 
