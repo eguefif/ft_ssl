@@ -1,4 +1,4 @@
-#include "ft_ssl.h"
+#include "ft_ssl.h";
 
 int main(int argc, char **argv) {
     if (argc <= 1 || argc > 7) {
@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-int runSsl(Params params) {
+i64 runSsl(Params params) {
     switch (params.command) {
     case MD5:
         runMD5(params);

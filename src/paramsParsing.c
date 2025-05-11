@@ -1,6 +1,6 @@
 #include "ft_ssl.h"
 
-Params parseParams(int argc, char **argv) {
+Params parseParams(i64 argc, char **argv) {
     Params params;
 
     bzero(&params, sizeof(Params));
@@ -9,7 +9,7 @@ Params parseParams(int argc, char **argv) {
     params.commandValue = argv[1];
     if (argc > 2) {
 
-        for (int i = 0; i < argc; i++) {
+        for (i64 i = 0; i < argc; i++) {
             if (argv[i] == 0) {
                 break;
             }
@@ -24,9 +24,9 @@ Params parseParams(int argc, char **argv) {
 }
 
 void parseFlags(char *arg, Flags *flags) {
-    int size = strlen(arg);
+    u64 size = strlen(arg);
 
-    for (int i = 1; i < size; i++) {
+    for (i64 i = 1; i < size; i++) {
         switch (arg[i]) {
         case 'p':
             flags->p = true;
@@ -44,7 +44,7 @@ void parseFlags(char *arg, Flags *flags) {
     }
 }
 
-int getCommand(char *command) {
+i64 getCommand(char *command) {
     if (!strncmp("md5", command, 3)) {
         return MD5;
     } else if (!strncmp("sha256", command, 5)) {

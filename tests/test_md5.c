@@ -17,6 +17,22 @@ void testGetPaddedTargetSize(void) {
     CU_ASSERT(result == 1536 / 8);
 }
 
+void testPadTarget(void) {
+    u64 size = 1000 / 8;
+    char *target = (char *)malloc(size);
+    for (int i = 0; i < size; i++) {
+        target[i] = 'a';
+    }
+    u64 paddedTargetSize = getPaddedTargetSize(strlen(target));
+    char *paddedTarget = (char *)malloc(paddedTargetSize);
+    padTarget(target, paddedTarget, size);
+
+    CU_ASSERT(paddedTarget[size] == (char)128);
+    for (int i = size + 1; i < (paddedTargetSize - 8); i++) {
+        CU_ASSERT(paddedTarget[size] == (char)0);
+    }
+}
+
 int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("Test MD5", 0, 0);
