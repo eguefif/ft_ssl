@@ -1,7 +1,7 @@
 #include "md5.h"
 #include "ft_ssl.h"
 
-void appendLength(u64 sizeInByte, char *paddedTarget);
+void appendLength(u64 sizeInByte, char *paddedTarget, u64 paddedTargetSize);
 void runMD5(Params params) { printf("Running MD5\n"); }
 void makeDigest(char *digest, char *paddedTarget);
 
@@ -29,18 +29,22 @@ u64 getPaddedTargetSize(u64 sizeInByte) {
     return retval;
 }
 
-void padTarget(char *target, char *paddedTarget, u64 totalSize) {
+void padTarget(char *target, char *paddedTarget, u64 paddedTargetSize) {
     u64 sizeInByte = strlen(target);
-    u64 sizeInBit = strlen(target) * 8;
+    bzero(paddedTarget, paddedTargetSize);
 
-    bzero(paddedTarget, totalSize);
     strncpy(target, paddedTarget, sizeInByte);
 
     paddedTarget[sizeInByte] = 0b10000000;
-    appendLength(sizeInByte, paddedTarget);
+    appendLength(sizeInByte, paddedTarget, paddedTargetSize);
 }
 
-void appendLength(u64 sizeInByte, char *paddedTarget) {}
+void appendLength(u64 sizeInByte, char *paddedTarget, u64 paddedTargetSize) {
+    u32 higherLength = (u32)((sizeInByte & 0xFFFFFFFF00000000) >> 32);
+    u64 lowerLength = sizeInByte & 0xFFFFFFFF;
+    u64 length = higherLength + lowerLength;
+    paddedTarget[paddedTargetSize - 8] = *(unsigned char *)length;
+}
 
 void makeDigest(char *digest, char *paddedTarget) {
     assert(strlen(paddedTarget) * 8 % 512 == 0);

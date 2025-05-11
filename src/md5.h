@@ -1,4 +1,5 @@
 #ifndef MD5
+
 #include "ft_ssl_types.h"
 
 u64 getPaddedTargetSize(u64 sizeInByte);

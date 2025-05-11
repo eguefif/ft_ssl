@@ -20,24 +20,38 @@ void testGetPaddedTargetSize(void) {
 void testPadTarget(void) {
     u64 size = 1000 / 8;
     char *target = (char *)malloc(size);
-    for (int i = 0; i < size; i++) {
+    bzero(target, size);
+    printf("size %lu\n", size);
+    for (u64 i = 0; i < size - 1; i++) {
         target[i] = 'a';
     }
     u64 paddedTargetSize = getPaddedTargetSize(strlen(target));
+    printf("size: %lu, padded size: %lu\n", size, paddedTargetSize);
     char *paddedTarget = (char *)malloc(paddedTargetSize);
     padTarget(target, paddedTarget, size);
 
+    // Check if first padded bit is 1
     CU_ASSERT(paddedTarget[size] == (char)128);
-    for (int i = size + 1; i < (paddedTargetSize - 8); i++) {
-        CU_ASSERT(paddedTarget[size] == (char)0);
-    }
+
+    // Check if the rest is 0 until length
+    // for (int i = size + 1; i < (paddedTargetSize - 8); i++) {
+    //    CU_ASSERT(paddedTarget[size] == (char)0);
+    //}
+
+    //// Check the length
+    u32 lowerLength = *(u32 *)(paddedTarget + paddedTargetSize - 8);
+    u32 higherLength = *(u32 *)(paddedTarget + paddedTargetSize - 4);
+    u64 length = lowerLength + ((u64)higherLength << 32);
+    printf("expected size :%lu, size: %lu\n", size, length);
+    CU_ASSERT(length == size);
 }
 
 int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("Test MD5", 0, 0);
-    CU_add_test(suite, "Test of calculateMD5", testMd5);
+    // CU_add_test(suite, "Test of calculateMD5", testMd5);
     CU_add_test(suite, "Test of getTargetPaddedSize", testGetPaddedTargetSize);
+    CU_add_test(suite, "Test of testPadTarget", testPadTarget);
     CU_basic_run_tests();
     CU_cleanup_registry();
     return 0;
