@@ -1,16 +1,22 @@
-#include "md5.h"
 #include "ft_ssl.h"
 
 void runMD5(Params params) { printf("Running MD5\n"); }
-void makeDigest(char *digest, char *paddedTarget);
+void makeDigest(char *digest, MD5Data *data);
+void appendTargetSize(MD5Data *data);
 
 void calculateMD5(char *digest, char *target) {
+    MD5Data data;
+
     bzero(digest, 16);
-    u64 size = getPaddedTargetSize(strlen(target));
-    char *paddedTarget = (char *)malloc(size);
-    padTarget(target, paddedTarget, size);
-    makeDigest(digest, paddedTarget);
-    free(paddedTarget);
+
+#include <unistd.h>
+    write(1, &"test\n", 5);
+    data.targetSize = strlen(target);
+    data.paddedTargetSize = getPaddedTargetSize(data.targetSize);
+    data.paddedTarget = (char *)malloc(data.paddedTargetSize);
+    padTarget(&data);
+    makeDigest(digest, &data);
+    free(data.paddedTarget);
 }
 
 u64 getPaddedTargetSize(u64 sizeInByte) {
@@ -28,22 +34,26 @@ u64 getPaddedTargetSize(u64 sizeInByte) {
     return retval;
 }
 
-void padTarget(char *target, char *paddedTarget, u64 paddedTargetSize) {
-    u64 sizeInByte = strlen(target);
-    assert(paddedTargetSize - sizeInByte >= 64);
+void padTarget(MD5Data *data) {
+    assert(data->paddedTargetSize - data->targetSize >= 64);
 
-    bzero(paddedTarget, paddedTargetSize);
+    bzero(data->paddedTarget, data->paddedTargetSize);
+    strncpy(data->paddedTarget, data->target, data->targetSize);
 
-    strncpy(target, paddedTarget, sizeInByte);
+    appendTargetSize(data);
+}
 
-    if (paddedTargetSize > (sizeInByte + 65)) {
-        paddedTarget[sizeInByte] = 0b10000000;
-        *(u64 *)(paddedTarget + paddedTargetSize - 8) = sizeInByte;
+void appendTargetSize(MD5Data *data) {
+    if (data->paddedTargetSize >= (data->targetSize + 65)) {
+        data->paddedTarget[data->targetSize] = 0b10000000;
+        *(u64 *)(data->paddedTarget + data->paddedTargetSize - 8) =
+            data->targetSize;
     } else {
-        *(u64 *)(paddedTarget + paddedTargetSize - 8) = sizeInByte;
+        *(u64 *)(data->paddedTarget + data->paddedTargetSize - 8) =
+            data->targetSize;
     }
 }
 
-void makeDigest(char *digest, char *paddedTarget) {
-    assert(strlen(paddedTarget) * 8 % 512 == 0);
+void makeDigest(char *digest, MD5Data *data) {
+    assert(strlen(data->target) * 8 % 512 == 0);
 }

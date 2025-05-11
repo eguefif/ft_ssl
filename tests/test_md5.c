@@ -18,28 +18,32 @@ void testGetPaddedTargetSize(void) {
 }
 
 void testPadTarget(void) {
+    MD5Data data;
+
     u64 size = 1000 / 8;
-    char *target = (char *)malloc(size + 1);
-    bzero(target, size + 1);
+    data.target = (char *)malloc(size + 1);
+    data.targetSize = 1000 / 8;
+    bzero(data.target, size + 1);
     for (u64 i = 0; i < size; i++) {
-        target[i] = 'a';
+        data.target[i] = 'a';
     }
-    u64 paddedTargetSize = getPaddedTargetSize(strlen(target));
-    char *paddedTarget = (char *)malloc(paddedTargetSize);
-    padTarget(target, paddedTarget, paddedTargetSize);
+    data.paddedTargetSize = getPaddedTargetSize(strlen(data.target));
+    data.paddedTarget = (char *)malloc(data.paddedTargetSize);
+
+    padTarget(&data);
 
     // Check if first padded bit is 1
-    CU_ASSERT(paddedTarget[size] == (char)128);
+    CU_ASSERT(data.paddedTarget[size] == (char)128);
 
     // Check if the rest is 0 until length
     u64 counter = 0;
-    for (int i = size + 1; i < (paddedTargetSize - 8); i++) {
-        counter += (u64)paddedTarget[i];
+    for (int i = size + 1; i < (data.paddedTargetSize - 8); i++) {
+        counter += (u64)data.paddedTarget[i];
     }
     CU_ASSERT(counter == 0);
 
     //// Check the length
-    u64 length = *(u64 *)(paddedTarget + paddedTargetSize - 8);
+    u64 length = *(u64 *)(data.paddedTarget + data.paddedTargetSize - 8);
     CU_ASSERT(length == size);
 }
 

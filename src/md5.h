@@ -2,6 +2,13 @@
 
 #include "ft_ssl_types.h"
 
+typedef struct {
+    char *paddedTarget;
+    u64 paddedTargetSize;
+    char *target;
+    u64 targetSize;
+} MD5Data;
+
 u64 getPaddedTargetSize(u64 sizeInByte);
-void padTarget(char *target, char *paddedTarget, u64 size);
+void padTarget(MD5Data *data);
 #endif
