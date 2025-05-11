@@ -1,5 +1,4 @@
 #ifndef MD5
-
 #include "ft_ssl_types.h"
 
 typedef struct {
@@ -11,4 +10,5 @@ typedef struct {
 u64 getPaddedTargetSize(u64 sizeInByte);
 void padTarget(MD5Data *data);
 void appendLength(MD5Data *data);
+void makeDigestFromPaddedTarget(char *digest, MD5Data *data);
 #endif

@@ -4,6 +4,7 @@ CFLAGS = -Wall -Wextra -O2
 SRC_DIR := src
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(SRCS:$(SRC_DIR)/%.c=%.o)
+SRCS_NO_MAIN := ./src/md5.c ./src/md5_algo.c
 
 TARGET = ft_ssl
 
@@ -15,8 +16,8 @@ $(TARGET): $(OBJS)
 %.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-test: ./tests/test_md5.c ./src/md5.c
-	gcc -I./src -o test ./tests/test_md5.c ./src/md5.c -lcunit
+test: $(SRCS) ./tests/test_md5.c
+	gcc -I./src -o test ./tests/test_md5.c $(SRCS_NO_MAIN) -lcunit -lm
 	./test
 
 clean:
