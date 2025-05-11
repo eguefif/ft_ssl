@@ -2,7 +2,6 @@
 #include "ft_ssl.h"
 
 void appendLength(u64 sizeInByte, char *paddedTarget);
-
 void runMD5(Params params) { printf("Running MD5\n"); }
 void makeDigest(char *digest, char *paddedTarget);
 

@@ -26,7 +26,7 @@ Params parseParams(i64 argc, char **argv) {
 void parseFlags(char *arg, Flags *flags) {
     u64 size = strlen(arg);
 
-    for (i64 i = 1; i < size; i++) {
+    for (u64 i = 1; i < size; i++) {
         switch (arg[i]) {
         case 'p':
             flags->p = true;

@@ -1,4 +1,5 @@
-#ifndef FT_SSL_TYPE
+#ifndef FT_SSL_TYPES_H
+#define FT_SSL_TYPES_H
 #include <stdint.h>
 #define true 1
 #define false 0
@@ -27,5 +28,4 @@ typedef struct {
     Flags flags;
     char *file;
 } Params;
-
 #endif

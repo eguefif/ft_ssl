@@ -1,4 +1,4 @@
-#include "ft_ssl.h";
+#include "ft_ssl.h"
 
 int main(int argc, char **argv) {
     if (argc <= 1 || argc > 7) {
