@@ -40,23 +40,24 @@ u32 SINE_TABLE[64] = {
 #define S43 15
 #define S44 21
 
-void round1op(u32 *, u32, u32, u32, u32, u32, u32, char *);
-void round2op(u32 *, u32, u32, u32, u32, u32, u32, char *);
-void round3op(u32 *, u32, u32, u32, u32, u32, u32, char *);
-void round4op(u32 *, u32, u32, u32, u32, u32, u32, char *);
-void round1(u32 *, u32 *, u32 *, u32 *, char *);
-void round2(u32 *, u32 *, u32 *, u32 *, char *);
-void round3(u32 *, u32 *, u32 *, u32 *, char *);
-void round4(u32 *, u32 *, u32 *, u32 *, char *);
-void processStates(u32 *states, char *block);
+void round1op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
+void round2op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
+void round3op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
+void round4op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
+void round1(u32 *, u32 *, u32 *, u32 *, u32 *);
+void round2(u32 *, u32 *, u32 *, u32 *, u32 *);
+void round3(u32 *, u32 *, u32 *, u32 *, u32 *);
+void round4(u32 *, u32 *, u32 *, u32 *, u32 *);
+void processStates(u32 *states, u32 *block);
 
 void makeDigestFromPaddedTarget(char *digest, MD5Data *data) {
     assert(data->paddedTargetSize * 8 % 512 == 0);
     bzero(digest, 16);
     u32 states[4] = {0x01234567, 0x89abcdef, 0xfedcba98, 0x76543210};
-    char block[16] = {0};
-    for (u64 i = 0; i < data->paddedTargetSize; i += 2) {
-        for (u64 j = 0; j < 15; j++) {
+    u32 block[32] = {0};
+    u32 *targetByWords = (u32 *)data->target;
+    for (u64 i = 0; i < data->paddedTargetSize / 2; i += 16) {
+        for (u64 j = 0; j < 16; j++) {
             block[j] = data->target[i * 16 + j];
         }
         processStates(states, block);
@@ -64,7 +65,7 @@ void makeDigestFromPaddedTarget(char *digest, MD5Data *data) {
     makeOutput(digest, states);
 }
 
-void processStates(u32 *states, char *block) {
+void processStates(u32 *states, u32 *block) {
     u32 a = states[0];
     u32 b = states[1];
     u32 c = states[2];
@@ -81,7 +82,7 @@ void processStates(u32 *states, char *block) {
     states[3] += d;
 }
 
-void round1(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
+void round1(u32 *a, u32 *b, u32 *c, u32 *d, u32 *block) {
     round1op(a, *b, *c, *d, 0, S11, 1, block);
     round1op(d, *a, *b, *c, 1, S12, 2, block);
     round1op(c, *d, *a, *b, 2, S13, 3, block);
@@ -103,12 +104,13 @@ void round1(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
     round1op(b, *c, *d, *a, 15, S14, 16, block);
 }
 
-void round1op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, char *block) {
-    *a += b + F(b, c, d) + block[k] + SINE_TABLE[i];
+void round1op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, u32 *block) {
+    *a += F(b, c, d) + block[k] + SINE_TABLE[i];
     *a = ROTATE_LEFT(*a, s);
+    *a += b;
 }
 
-void round2(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
+void round2(u32 *a, u32 *b, u32 *c, u32 *d, u32 *block) {
     round2op(a, *b, *c, *d, 1, S21, 17, block);
     round2op(d, *a, *b, *c, 6, S22, 18, block);
     round2op(c, *d, *a, *b, 11, S23, 19, block);
@@ -130,63 +132,66 @@ void round2(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
     round2op(b, *c, *d, *a, 12, S24, 32, block);
 }
 
-void round2op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, char *block) {
-    *a += b + G(b, c, d) + block[k] + SINE_TABLE[i];
+void round2op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, u32 *block) {
+    *a += G(b, c, d) + block[k] + SINE_TABLE[i];
     *a = ROTATE_LEFT(*a, s);
+    *a += b;
 }
 
-void round3(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
-    round3op(a, *b, *c, *d, 5, S21, 33, block);
-    round3op(d, *a, *b, *c, 8, S22, 34, block);
-    round3op(c, *d, *a, *b, 11, S23, 35, block);
-    round3op(b, *c, *d, *a, 14, S24, 36, block);
+void round3(u32 *a, u32 *b, u32 *c, u32 *d, u32 *block) {
+    round3op(a, *b, *c, *d, 5, S31, 33, block);
+    round3op(d, *a, *b, *c, 8, S32, 34, block);
+    round3op(c, *d, *a, *b, 11, S33, 35, block);
+    round3op(b, *c, *d, *a, 14, S34, 36, block);
 
-    round3op(a, *b, *c, *d, 1, S21, 37, block);
-    round3op(d, *a, *b, *c, 4, S22, 38, block);
-    round3op(c, *d, *a, *b, 7, S23, 39, block);
-    round3op(b, *c, *d, *a, 10, S24, 40, block);
+    round3op(a, *b, *c, *d, 1, S31, 37, block);
+    round3op(d, *a, *b, *c, 4, S32, 38, block);
+    round3op(c, *d, *a, *b, 7, S33, 39, block);
+    round3op(b, *c, *d, *a, 10, S34, 40, block);
 
-    round3op(a, *b, *c, *d, 13, S21, 41, block);
-    round3op(d, *a, *b, *c, 0, S22, 42, block);
-    round3op(c, *d, *a, *b, 3, S23, 43, block);
-    round3op(b, *c, *d, *a, 6, S24, 44, block);
+    round3op(a, *b, *c, *d, 13, S31, 41, block);
+    round3op(d, *a, *b, *c, 0, S32, 42, block);
+    round3op(c, *d, *a, *b, 3, S33, 43, block);
+    round3op(b, *c, *d, *a, 6, S34, 44, block);
 
-    round3op(a, *b, *c, *d, 9, S21, 45, block);
-    round3op(d, *a, *b, *c, 12, S22, 46, block);
-    round3op(c, *d, *a, *b, 15, S23, 47, block);
-    round3op(b, *c, *d, *a, 2, S24, 48, block);
+    round3op(a, *b, *c, *d, 9, S31, 45, block);
+    round3op(d, *a, *b, *c, 12, S32, 46, block);
+    round3op(c, *d, *a, *b, 15, S33, 47, block);
+    round3op(b, *c, *d, *a, 2, S34, 48, block);
 }
 
-void round3op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, char *block) {
-    *a += b + H(b, c, d) + block[k] + SINE_TABLE[i];
+void round3op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, u32 *block) {
+    *a += H(b, c, d) + block[k] + SINE_TABLE[i];
     *a = ROTATE_LEFT(*a, s);
+    *a += b;
 }
 
-void round4(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
-    round4op(a, *b, *c, *d, 0, S21, 49, block);
-    round4op(d, *a, *b, *c, 7, S22, 50, block);
-    round4op(c, *d, *a, *b, 14, S23, 51, block);
-    round4op(b, *c, *d, *a, 5, S24, 52, block);
+void round4(u32 *a, u32 *b, u32 *c, u32 *d, u32 *block) {
+    round4op(a, *b, *c, *d, 0, S41, 49, block);
+    round4op(d, *a, *b, *c, 7, S42, 50, block);
+    round4op(c, *d, *a, *b, 14, S43, 51, block);
+    round4op(b, *c, *d, *a, 5, S44, 52, block);
 
-    round4op(a, *b, *c, *d, 12, S21, 53, block);
-    round4op(d, *a, *b, *c, 3, S22, 54, block);
-    round4op(c, *d, *a, *b, 10, S23, 55, block);
-    round4op(b, *c, *d, *a, 1, S24, 56, block);
+    round4op(a, *b, *c, *d, 12, S41, 53, block);
+    round4op(d, *a, *b, *c, 3, S42, 54, block);
+    round4op(c, *d, *a, *b, 10, S43, 55, block);
+    round4op(b, *c, *d, *a, 1, S44, 56, block);
 
-    round4op(a, *b, *c, *d, 8, S21, 57, block);
-    round4op(d, *a, *b, *c, 15, S22, 58, block);
-    round4op(c, *d, *a, *b, 6, S23, 59, block);
-    round4op(b, *c, *d, *a, 13, S24, 60, block);
+    round4op(a, *b, *c, *d, 8, S41, 57, block);
+    round4op(d, *a, *b, *c, 15, S42, 58, block);
+    round4op(c, *d, *a, *b, 6, S43, 59, block);
+    round4op(b, *c, *d, *a, 13, S44, 60, block);
 
-    round4op(a, *b, *c, *d, 4, S21, 61, block);
-    round4op(d, *a, *b, *c, 11, S22, 62, block);
-    round4op(c, *d, *a, *b, 2, S23, 63, block);
-    round4op(b, *c, *d, *a, 9, S24, 64, block);
+    round4op(a, *b, *c, *d, 4, S41, 61, block);
+    round4op(d, *a, *b, *c, 11, S42, 62, block);
+    round4op(c, *d, *a, *b, 2, S43, 63, block);
+    round4op(b, *c, *d, *a, 9, S44, 64, block);
 }
 
-void round4op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, char *block) {
-    *a += b + I(b, c, d) + block[k] + SINE_TABLE[i];
+void round4op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, u32 *block) {
+    *a += I(b, c, d) + block[k] + SINE_TABLE[i];
     *a = ROTATE_LEFT(*a, s);
+    *a += b;
 }
 
 void makeOutput(char *digest, u32 *states) {

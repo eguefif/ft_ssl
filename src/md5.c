@@ -3,10 +3,6 @@
 
 void padTarget(MD5Data *data);
 void pad(MD5Data *data);
-u32 F(u32 X, u32 Y, u32 Z);
-u32 G(u32 X, u32 Y, u32 Z);
-u32 H(u32 X, u32 Y, u32 Z);
-u32 I(u32 X, u32 Y, u32 Z);
 
 void runMD5(Params params) { printf("Running MD5\n"); }
 
