@@ -2,8 +2,8 @@
 #define MINIMUM_PADDING_SIZE 64 + 1
 
 void makeDigestFromPaddedTarget(char *digest, MD5Data *data);
-void appendTargetSize(MD5Data *data);
-void initPaddedTarget(MD5Data *data, char *target);
+void padTarget(MD5Data *data);
+void pad(MD5Data *data);
 
 void runMD5(Params params) { printf("Running MD5\n"); }
 
@@ -11,16 +11,24 @@ void calculateMD5(char *digest, char *target) {
     MD5Data data;
 
     data.target = target;
-    initPaddedTarget(&data, target);
+    padTarget(&data);
+    appendLength(&data);
     makeDigestFromPaddedTarget(digest, &data);
-    free(data.paddedTarget);
+    free(data.target);
 }
 
-void initPaddedTarget(MD5Data *data, char *target) {
-    data->targetSize = strlen(target);
-    data->paddedTargetSize = getPaddedTargetSize(data->targetSize);
-    data->paddedTarget = (char *)malloc(data->paddedTargetSize);
-    padTarget(data);
+void padTarget(MD5Data *data) {
+    data->targetSize = strlen(data->target);
+    u64 paddedTargetSize = getPaddedTargetSize(data->targetSize);
+    char *buffer = (char *)malloc(paddedTargetSize);
+
+    assert(paddedTargetSize - data->targetSize >= 8);
+
+    bzero(buffer, paddedTargetSize);
+    strncpy(buffer, data->target, data->targetSize);
+    buffer[data->targetSize] = 0b10000000;
+    data->paddedTargetSize = paddedTargetSize;
+    data->target = buffer;
 }
 
 u64 getPaddedTargetSize(u64 sizeInByte) {
@@ -37,19 +45,9 @@ u64 getPaddedTargetSize(u64 sizeInByte) {
     return paddedTargetSizeInBit / 8;
 }
 
-void padTarget(MD5Data *data) {
-    assert(data->paddedTargetSize - data->targetSize >= 8);
-
-    bzero(data->paddedTarget, data->paddedTargetSize);
-    strncpy(data->paddedTarget, data->target, data->targetSize);
-    data->paddedTarget[data->targetSize] = 0b10000000;
-    appendTargetSize(data);
-}
-
-void appendTargetSize(MD5Data *data) {
+void appendLength(MD5Data *data) {
     u64 length = data->targetSize % (u64)pow(2, 64);
-    *(u64 *)(data->paddedTarget + data->paddedTargetSize - 8) =
-        data->targetSize;
+    *(u64 *)(data->target + data->paddedTargetSize - 8) = length;
 }
 
 void makeDigestFromPaddedTarget(char *digest, MD5Data *data) {

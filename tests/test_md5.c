@@ -29,22 +29,23 @@ void testPadTarget(void) {
         data.target[i] = 'a';
     }
     data.paddedTargetSize = getPaddedTargetSize(strlen(data.target));
-    data.paddedTarget = (char *)malloc(data.paddedTargetSize);
+    char *buffer = (char *)malloc(data.paddedTargetSize);
 
     padTarget(&data);
+    appendLength(&data);
 
     // Check if first padded bit is 1
-    CU_ASSERT(data.paddedTarget[size] == (char)128);
+    CU_ASSERT(data.target[size] == (char)128);
 
     // Check if the rest is 0 until length
     u64 counter = 0;
     for (int i = size + 1; i < (data.paddedTargetSize - 8); i++) {
-        counter += (u64)data.paddedTarget[i];
+        counter += (u64)data.target[i];
     }
     CU_ASSERT(counter == 0);
 
-    //// Check the length
-    u64 length = *(u64 *)(data.paddedTarget + data.paddedTargetSize - 8);
+    // Check the length
+    u64 length = *(u64 *)(data.target + data.paddedTargetSize - 8);
     CU_ASSERT(length == size);
 }
 
