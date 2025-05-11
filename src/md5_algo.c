@@ -18,6 +18,7 @@ u32 SINE_TABLE[64] = {
 #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
 #define H(x, y, z) ((x) ^ (y) ^ (z))
 #define I(x, y, z) ((y) ^ ((x) | (~z)))
+#define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
 
 #define S11 7
 #define S12 12
@@ -47,17 +48,17 @@ void round1(u32 *, u32 *, u32 *, u32 *, char *);
 void round2(u32 *, u32 *, u32 *, u32 *, char *);
 void round3(u32 *, u32 *, u32 *, u32 *, char *);
 void round4(u32 *, u32 *, u32 *, u32 *, char *);
-u64 calculateWordCount(MD5Data *data);
 void processStates(u32 *states, char *block);
 
 void makeDigestFromPaddedTarget(char *digest, MD5Data *data) {
     assert(data->paddedTargetSize * 8 % 512 == 0);
     bzero(digest, 16);
-    u64 wordCount = calculateWordCount(data);
     u32 states[4] = {0x01234567, 0x89abcdef, 0xfedcba98, 0x76543210};
-    char block[2] = {0};
-    for (u64 i = 0; i < wordCount; i++) {
-        char *block = &(data->target[i * 2]);
+    char block[16] = {0};
+    for (u64 i = 0; i < data->paddedTargetSize; i += 2) {
+        for (u64 j = 0; j < 15; j++) {
+            block[j] = data->target[i * 16 + j];
+        }
         processStates(states, block);
     }
     makeOutput(digest, states);
@@ -103,7 +104,8 @@ void round1(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
 }
 
 void round1op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, char *block) {
-    *a += b + ((*a + F(b, c, d) + block[k] + SINE_TABLE[i]) << s);
+    *a += b + F(b, c, d) + block[k] + SINE_TABLE[i];
+    *a = ROTATE_LEFT(*a, s);
 }
 
 void round2(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
@@ -129,7 +131,8 @@ void round2(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
 }
 
 void round2op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, char *block) {
-    *a += b + ((*a + G(b, c, d) + block[k] + SINE_TABLE[i]) << s);
+    *a += b + G(b, c, d) + block[k] + SINE_TABLE[i];
+    *a = ROTATE_LEFT(*a, s);
 }
 
 void round3(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
@@ -155,7 +158,8 @@ void round3(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
 }
 
 void round3op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, char *block) {
-    *a += b + ((*a + H(b, c, d) + block[k] + SINE_TABLE[i]) << s);
+    *a += b + H(b, c, d) + block[k] + SINE_TABLE[i];
+    *a = ROTATE_LEFT(*a, s);
 }
 
 void round4(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
@@ -181,7 +185,8 @@ void round4(u32 *a, u32 *b, u32 *c, u32 *d, char *block) {
 }
 
 void round4op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, char *block) {
-    *a += b + ((*a + I(b, c, d) + block[k] + SINE_TABLE[i]) << s);
+    *a += b + I(b, c, d) + block[k] + SINE_TABLE[i];
+    *a = ROTATE_LEFT(*a, s);
 }
 
 void makeOutput(char *digest, u32 *states) {
@@ -191,5 +196,3 @@ void makeOutput(char *digest, u32 *states) {
         sprintf(digest + i * 8, "%04x%04x", lower, higher);
     }
 }
-
-u64 calculateWordCount(MD5Data *data) { return data->paddedTargetSize / 2; }

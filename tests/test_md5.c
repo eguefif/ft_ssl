@@ -9,7 +9,8 @@ void testMd5(void) {
     char *result = malloc(33);
     result[32] = 0;
     calculateMD5(result, target);
-    printf("result: %s\n", result);
+    printf("result  : %s\n", result);
+    printf("expected: %s\n", expected);
     CU_ASSERT(strncmp(result, target, 32) == 0);
     free(result);
 }
