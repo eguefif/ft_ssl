@@ -1,4 +1,5 @@
 #include "ft_ssl.h"
+#define MINIMUM_PADDING_SIZE 64 + 1
 
 void makeDigestFromPaddedTarget(char *digest, MD5Data *data);
 void appendTargetSize(MD5Data *data);
@@ -23,18 +24,17 @@ void initPaddedTarget(MD5Data *data, char *target) {
 }
 
 u64 getPaddedTargetSize(u64 sizeInByte) {
-    u64 retval = 0;
-    u64 targetSize = sizeInByte * 8;
-    i64 rest = targetSize % 512;
-    i64 quotient = targetSize / 512;
+    u64 paddedTargetSizeInBit = 0;
+    u64 targetSizeInBit = sizeInByte * 8;
+    i64 rest = targetSizeInBit % 512;
+    i64 quotient = targetSizeInBit / 512;
 
-    if ((512 - rest) < 64) {
-        retval = (quotient + 1 + 1) * 512;
+    if ((512 - rest) < MINIMUM_PADDING_SIZE) {
+        paddedTargetSizeInBit = (quotient + 1 + 1) * 512;
     } else {
-        retval = (quotient + 1) * 512;
+        paddedTargetSizeInBit = (quotient + 1) * 512;
     }
-    retval /= 8;
-    return retval;
+    return paddedTargetSizeInBit / 8;
 }
 
 void padTarget(MD5Data *data) {
@@ -42,21 +42,14 @@ void padTarget(MD5Data *data) {
 
     bzero(data->paddedTarget, data->paddedTargetSize);
     strncpy(data->paddedTarget, data->target, data->targetSize);
-#include <unistd.h>
-    write(1, &"test\n", 5);
-
+    data->paddedTarget[data->targetSize] = 0b10000000;
     appendTargetSize(data);
 }
 
 void appendTargetSize(MD5Data *data) {
-    if (data->paddedTargetSize >= (data->targetSize + 65)) {
-        data->paddedTarget[data->targetSize] = 0b10000000;
-        *(u64 *)(data->paddedTarget + data->paddedTargetSize - 8) =
-            data->targetSize;
-    } else {
-        *(u64 *)(data->paddedTarget + data->paddedTargetSize - 8) =
-            data->targetSize;
-    }
+    u64 length = data->targetSize % (u64)pow(2, 64);
+    *(u64 *)(data->paddedTarget + data->paddedTargetSize - 8) =
+        data->targetSize;
 }
 
 void makeDigestFromPaddedTarget(char *digest, MD5Data *data) {
