@@ -1,4 +1,4 @@
 #ifndef MD5
-int getPaddedTargetSize(char *target);
+int getPaddedTargetSize(int sizeInByte);
 void padTarget(char *target, char *paddedTarget);
 #endif

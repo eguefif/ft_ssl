@@ -15,7 +15,7 @@ $(TARGET): $(OBJS)
 %.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-test: ./tests/test_md5.c
+test: ./tests/test_md5.c ./src/md5.c
 	gcc -I./src -o test ./tests/test_md5.c ./src/md5.c -lcunit
 	./test
 

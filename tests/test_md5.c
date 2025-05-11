@@ -11,11 +11,10 @@ void testMd5(void) {
     CU_ASSERT(strncmp(result, target, strlen(target)) == 0);
 }
 
+// Test case took on https://www.geeksforgeeks.org/what-is-the-md5-algorithm/
 void testGetPaddedTargetSize(void) {
-    char *target = "The quick";
-
-    int result = getPaddedTargetSize(target);
-    CU_ASSERT(result == 5);
+    int result = getPaddedTargetSize(1000 / 8);
+    CU_ASSERT(result == 1536 / 8);
 }
 
 int main() {
