@@ -6,9 +6,11 @@ void testMd5(void) {
     char *target = "The quick brown fox jumps over the lazy dog";
     char *expected = "9e107d9d372bb6826bd81d3542a419d6";
 
-    char *result = malloc(16);
+    char *result = malloc(33);
+    result[32] = 0;
     calculateMD5(result, target);
-    CU_ASSERT(strncmp(result, target, 16) == 0);
+    printf("result: %s\n", result);
+    CU_ASSERT(strncmp(result, target, 32) == 0);
     free(result);
 }
 
@@ -50,12 +52,11 @@ void testPadTarget(void) {
 }
 
 void testMakeOutput(void) {
-    char *digest = (char *)malloc(17);
-    u32 states[4] = {0x31323334, 0x41424344, 0x45464748, 0x61626364};
-    digest[16] = 0;
+    char *digest = (char *)malloc(33);
+    u32 states[4] = {0x01234567, 0x89abcdef, 0xfedcba98, 0x76543210};
+    digest[32] = 0;
     makeOutput(digest, states);
-    printf("\nresult %s\n", digest);
-    CU_ASSERT(strncpy(digest, "4321DCBAHGFEdcba", 16) == 0);
+    CU_ASSERT(strncmp(digest, "45670123cdef89abba98fedc32107654", 32) == 0);
 }
 
 int main() {
