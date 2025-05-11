@@ -30,12 +30,18 @@ u64 getPaddedTargetSize(u64 sizeInByte) {
 
 void padTarget(char *target, char *paddedTarget, u64 paddedTargetSize) {
     u64 sizeInByte = strlen(target);
+    assert(paddedTargetSize - sizeInByte >= 64);
+
     bzero(paddedTarget, paddedTargetSize);
 
     strncpy(target, paddedTarget, sizeInByte);
 
-    paddedTarget[sizeInByte] = 0b10000000;
-    *(u64 *)(paddedTarget + paddedTargetSize - 8) = sizeInByte;
+    if (paddedTargetSize > (sizeInByte + 65)) {
+        paddedTarget[sizeInByte] = 0b10000000;
+        *(u64 *)(paddedTarget + paddedTargetSize - 8) = sizeInByte;
+    } else {
+        *(u64 *)(paddedTarget + paddedTargetSize - 8) = sizeInByte;
+    }
 }
 
 void makeDigest(char *digest, char *paddedTarget) {
