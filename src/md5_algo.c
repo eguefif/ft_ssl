@@ -93,7 +93,7 @@ void processStates(MD5Data *data) {
     u32 b = data->states[1];
     u32 c = data->states[2];
     u32 d = data->states[3];
-    printStates(data->states);
+    // printStates(data->states);
 
     round1(&a, &b, &c, &d, block);
     round2(&a, &b, &c, &d, block);
@@ -105,7 +105,7 @@ void processStates(MD5Data *data) {
     data->states[2] += c;
     data->states[3] += d;
 
-    printStates(data->states);
+    // printStates(data->states);
 }
 
 void round1(u32 *a, u32 *b, u32 *c, u32 *d, u32 *block) {
