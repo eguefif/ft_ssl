@@ -26,6 +26,6 @@ typedef struct {
     i64 command;
     char *commandValue;
     Flags flags;
-    char *file;
+    char *target;
 } Params;
 #endif

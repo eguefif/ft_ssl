@@ -8,11 +8,13 @@
 #include <string.h>
 #include <unistd.h>
 #define EXIT_FAILURE 1
+#define TARGET_MAX_SIZE 5000
 
 #define MD5 0
 #define SHA256 1
 
 i64 runSsl(Params);
+void runHash(Params params);
 
 Params parseParams(i64, char **);
 void parseFlags(char *, Flags *);
@@ -25,8 +27,5 @@ void runMD5(Params params);
 void calculateMD5(u8 *digest, u8 *target);
 void runSHA256(Params params);
 
-// File stdin utilities
-void getStdin(u8 *target, u64 max);
-void getContent(u8 *target, char *param, u64 max);
-void getFile(u8 *target, char *filename, u64 max);
+void getTarget(u8 *content, char *target);
 #endif

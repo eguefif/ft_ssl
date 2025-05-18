@@ -14,36 +14,6 @@ const u32 SINE_TABLE[64] = {
     0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391,
 };
 
-void printHash(u8 *digest, u64 len) {
-    for (u64 i = 0; i < len; i++) {
-        printf("%02x", digest[i]);
-    }
-}
-
-void runMD5(Params params) {
-    u8 target[5000];
-    printf("MD5 ");
-    if (params.file == 0) {
-        getStdin(target, 5000);
-        printf("(stdin) = ");
-    } else {
-
-        if (access(params.file, F_OK) == 0) {
-            printf("(%s) = ", params.file);
-            getFile(target, params.file, 5000);
-        } else {
-            getContent(target, params.file, 5000);
-        }
-    }
-    if (params.flags.p) {
-        printf(" (\"%s\") ", target);
-    }
-    u8 digest[16];
-    calculateMD5(digest, target);
-    printHash(digest, 16);
-    printf("\n");
-}
-
 void calculateMD5(u8 *digest, u8 *target) {
     MD5Data data = md5Init();
     md5Update(&data, target, strlen((char *)target));
@@ -87,7 +57,7 @@ void md5Finalize(MD5Data *data, u8 *digest) {
         u32 length[2];
         processStates(data);
         memset(data->buffer, 0, 64);
-        length[0] = data->bitsCount & 0xFFFF;
+        length[0] = data->bitsCount & 0xFFFFFFFF;
         length[1] = (data->bitsCount >> 32) & 0xFFFF;
         u32ArrayToChar(&data->buffer[56], length, 2);
         processStates(data);

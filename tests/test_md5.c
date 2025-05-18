@@ -24,7 +24,7 @@ void testMd5GreaterThan64(void) {
 
     char hexdigest[32];
     toHexDigest(hexdigest, result);
-    CU_ASSERT(strncmp(hexdigest, expected, 16) == 0);
+    CU_ASSERT(strncmp(hexdigest, expected, 32) == 0);
 }
 
 void testMd5NotEnoughForPadding(void) {
@@ -36,7 +36,7 @@ void testMd5NotEnoughForPadding(void) {
 
     char hexdigest[32];
     toHexDigest(hexdigest, result);
-    CU_ASSERT(strncmp(hexdigest, expected, 16) == 0);
+    CU_ASSERT(strncmp(hexdigest, expected, 32) == 0);
 }
 
 void testMd5HelloWorld(void) {
@@ -48,7 +48,7 @@ void testMd5HelloWorld(void) {
 
     char hexdigest[32];
     toHexDigest(hexdigest, result);
-    CU_ASSERT(strncmp(hexdigest, expected, 16) == 0);
+    CU_ASSERT(strncmp(hexdigest, expected, 32) == 0);
 }
 
 void testMd5EmptyTarget(void) {

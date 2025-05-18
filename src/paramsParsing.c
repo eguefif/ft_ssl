@@ -16,7 +16,7 @@ Params parseParams(i64 argc, char **argv) {
             if (argv[i][0] == '-') {
                 parseFlags(argv[i], &(params.flags));
             } else {
-                params.file = argv[i];
+                params.target = argv[i];
             }
         }
     }
