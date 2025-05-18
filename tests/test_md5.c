@@ -2,71 +2,90 @@
 #include <CUnit/Basic.h>
 #include <CUnit/CUnit.h>
 
-void testMd5(void) {
-    char *target = "The quick brown fox jumps over the lazy dog";
-    char *expected = "9e107d9d372bb6826bd81d3542a419d6";
-
-    char *result = malloc(33);
-    result[32] = 0;
-    calculateMD5(result, target);
-    printf("result  : %s\n", result);
-    printf("expected: %s\n", expected);
-    CU_ASSERT(strncmp(result, target, 32) == 0);
-    free(result);
-}
-
-// Test case took on https://www.geeksforgeeks.org/what-is-the-md5-algorithm/
-void testGetPaddedTargetSize(void) {
-    int result = getPaddedTargetSize(1000 / 8);
-    CU_ASSERT(result == 1536 / 8);
-}
-
-void testPadTarget(void) {
-    MD5Data data;
-
-    u64 size = 1000 / 8;
-    data.target = (char *)malloc(size + 1);
-    data.targetSize = 1000 / 8;
-    bzero(data.target, size + 1);
-    for (u64 i = 0; i < size; i++) {
-        data.target[i] = 'a';
+void printDigest(unsigned char *digest) {
+    for (int i = 0; i < 16; i++) {
+        printf("%02x", digest[i]);
     }
-    data.paddedTargetSize = getPaddedTargetSize(strlen(data.target));
-    char *buffer = (char *)malloc(data.paddedTargetSize);
-
-    padTarget(&data);
-    appendLength(&data);
-
-    // Check if first padded bit is 1
-    CU_ASSERT(data.target[size] == (char)128);
-
-    // Check if the rest is 0 until length
-    u64 counter = 0;
-    for (int i = size + 1; i < (data.paddedTargetSize - 8); i++) {
-        counter += (u64)data.target[i];
-    }
-    CU_ASSERT(counter == 0);
-
-    // Check the length
-    u64 length = *(u64 *)(data.target + data.paddedTargetSize - 8);
-    CU_ASSERT(length == size);
+    printf("\n");
 }
 
-void testMakeOutput(void) {
-    char *digest = (char *)malloc(33);
-    u32 states[4] = {0x01234567, 0x89abcdef, 0xfedcba98, 0x76543210};
-    digest[32] = 0;
-    makeOutput(digest, states);
-    CU_ASSERT(strncmp(digest, "45670123cdef89abba98fedc32107654", 32) == 0);
+void toHexDigest(char *hexdigest, unsigned char *digest) {
+    for (int i = 0; i < 16; i++) {
+        sprintf(&hexdigest[i * 2], "%02x", digest[i]);
+    }
+}
+void testMd5Exactly64(void) {
+    char *target =
+        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean";
+    char *expected = "2172f297164df75abb9c2d71b1003350";
+
+    u8 result[16];
+    calculateMD5(result, (u8 *)target);
+
+    char hexdigest[32];
+    toHexDigest(hexdigest, result);
+    CU_ASSERT(strncmp(hexdigest, expected, 32) == 0);
+}
+void testMd5GreaterThan64(void) {
+    char *target =
+        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean.";
+    char *expected = "f1e06497576d815fc8939fada933a6b3";
+
+    u8 result[16];
+    calculateMD5(result, (u8 *)target);
+
+    char hexdigest[32];
+    toHexDigest(hexdigest, result);
+    CU_ASSERT(strncmp(hexdigest, expected, 32) == 0);
+}
+
+void testMd5NotEnoughForPadding(void) {
+    char *target = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
+    char *expected = "a84e9dae73341f1e9764f349701a5adf";
+
+    u8 result[16];
+    calculateMD5(result, (u8 *)target);
+
+    char hexdigest[32];
+    toHexDigest(hexdigest, result);
+    CU_ASSERT(strncmp(hexdigest, expected, 32) == 0);
+}
+
+void testMd5HelloWorld(void) {
+    char *target = "Hello, world!";
+    char *expected = "6cd3556deb0da54bca060b4c39479839";
+
+    u8 result[16];
+    calculateMD5(result, (u8 *)target);
+
+    char hexdigest[32];
+    toHexDigest(hexdigest, result);
+    CU_ASSERT(strncmp(hexdigest, expected, 32) == 0);
+}
+
+void testMd5EmptyTarget(void) {
+    char *target = "";
+    char *expected = "d41d8cd98f00b204e9800998ecf8427e";
+
+    u8 result[16];
+    calculateMD5(result, (u8 *)target);
+    char hexdigest[32];
+    toHexDigest(hexdigest, result);
+    CU_ASSERT(strncmp(hexdigest, expected, 32) == 0);
 }
 
 int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("Test MD5", 0, 0);
-    CU_add_test(suite, "Test of calculateMD5", testMd5);
-    CU_add_test(suite, "Test of getTargetPaddedSize", testGetPaddedTargetSize);
-    CU_add_test(suite, "Test of testPadTarget", testPadTarget);
-    CU_add_test(suite, "Test of testMakeOutput", testMakeOutput);
+    CU_add_test(suite, "Test of calculateMD5", testMd5HelloWorld);
+    CU_add_test(suite, "Test of calculateMD5: empty target",
+                testMd5EmptyTarget);
+    CU_add_test(suite, "Test of when not enough for padding",
+                testMd5NotEnoughForPadding);
+
+    CU_add_test(suite, "Test of when target greater than 64",
+                testMd5GreaterThan64);
+    CU_add_test(suite, "Test of when target exactly 64", testMd5Exactly64);
     CU_basic_run_tests();
     CU_cleanup_registry();
     return 0;

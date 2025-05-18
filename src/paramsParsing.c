@@ -3,20 +3,20 @@
 Params parseParams(i64 argc, char **argv) {
     Params params;
 
-    bzero(&params, sizeof(Params));
+    memset(&params, 0, sizeof(Params));
 
     params.command = getCommand(argv[1]);
     params.commandValue = argv[1];
     if (argc > 2) {
 
-        for (i64 i = 0; i < argc; i++) {
+        for (i64 i = 2; i < argc; i++) {
             if (argv[i] == 0) {
                 break;
             }
             if (argv[i][0] == '-') {
                 parseFlags(argv[i], &(params.flags));
             } else {
-                params.file = argv[i];
+                params.target = argv[i];
             }
         }
     }

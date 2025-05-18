@@ -4,7 +4,7 @@ CFLAGS = -Wall -Wextra -O2
 SRC_DIR := src
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(SRCS:$(SRC_DIR)/%.c=%.o)
-SRCS_NO_MAIN := ./src/md5.c ./src/md5_algo.c
+SRCS_NO_MAIN := ./src/md5.c
 
 TARGET = ft_ssl
 
@@ -21,7 +21,7 @@ test: $(SRCS) ./tests/test_md5.c
 	./test
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS)
 
 .PHONY: all clean
 run:
