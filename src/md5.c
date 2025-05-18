@@ -14,7 +14,23 @@ const u32 SINE_TABLE[64] = {
     0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391,
 };
 
-void runMD5(Params params) { printf("Running MD5\n"); }
+void printHash(u8 *digest, u64 len) {
+    for (u64 i = 0; i < len; i++) {
+        printf("%02x", digest[i]);
+    }
+}
+
+void runMD5(Params params) {
+    if (params.file == 0) {
+        u8 target[5000];
+        getStdin(target, 5000);
+        u8 digest[16];
+        calculateMD5(digest, target);
+        printf("(stdin)= ");
+        printHash(digest, 16);
+        printf("\n");
+    }
+}
 
 void calculateMD5(u8 *digest, u8 *target) {
     MD5Data data = md5Init();
@@ -41,7 +57,7 @@ void md5Update(MD5Data *data, u8 *input, u64 inputLen) {
     data->bitsCount += inputLen * 8;
     if (inputLen > 64) {
         for (i = 0; i < (inputLen - 64); i += 64) {
-            strncpy((char *)data->buffer, (char *)&input[i], 64);
+            memcpy((char *)data->buffer, (char *)&input[i], 64);
             processStates(data);
         }
     } else

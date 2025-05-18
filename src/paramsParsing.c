@@ -3,7 +3,7 @@
 Params parseParams(i64 argc, char **argv) {
     Params params;
 
-    bzero(&params, sizeof(Params));
+    memset(&params, 0, sizeof(Params));
 
     params.command = getCommand(argv[1]);
     params.commandValue = argv[1];

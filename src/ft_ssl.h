@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #define EXIT_FAILURE 1
 
 #define MD5 0
@@ -23,4 +24,7 @@ void runMD5(Params params);
 
 void calculateMD5(u8 *digest, u8 *target);
 void runSHA256(Params params);
+
+// File stdin utilities
+void getStdin(u8 *target, u64 max);
 #endif

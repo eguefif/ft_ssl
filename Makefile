@@ -21,7 +21,7 @@ test: $(SRCS) ./tests/test_md5.c
 	./test
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS)
 
 .PHONY: all clean
 run:
