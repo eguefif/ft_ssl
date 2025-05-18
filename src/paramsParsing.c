@@ -9,7 +9,7 @@ Params parseParams(i64 argc, char **argv) {
     params.commandValue = argv[1];
     if (argc > 2) {
 
-        for (i64 i = 0; i < argc; i++) {
+        for (i64 i = 2; i < argc; i++) {
             if (argv[i] == 0) {
                 break;
             }

@@ -27,4 +27,6 @@ void runSHA256(Params params);
 
 // File stdin utilities
 void getStdin(u8 *target, u64 max);
+void getContent(u8 *target, char *param, u64 max);
+void getFile(u8 *target, char *filename, u64 max);
 #endif

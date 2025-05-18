@@ -21,15 +21,27 @@ void printHash(u8 *digest, u64 len) {
 }
 
 void runMD5(Params params) {
+    u8 target[5000];
+    printf("MD5 ");
     if (params.file == 0) {
-        u8 target[5000];
         getStdin(target, 5000);
-        u8 digest[16];
-        calculateMD5(digest, target);
-        printf("(stdin)= ");
-        printHash(digest, 16);
-        printf("\n");
+        printf("(stdin) = ");
+    } else {
+
+        if (access(params.file, F_OK) == 0) {
+            printf("(%s) = ", params.file);
+            getFile(target, params.file, 5000);
+        } else {
+            getContent(target, params.file, 5000);
+        }
     }
+    if (params.flags.p) {
+        printf(" (\"%s\") ", target);
+    }
+    u8 digest[16];
+    calculateMD5(digest, target);
+    printHash(digest, 16);
+    printf("\n");
 }
 
 void calculateMD5(u8 *digest, u8 *target) {
