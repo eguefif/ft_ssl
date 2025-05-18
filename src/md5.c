@@ -37,8 +37,8 @@ void md5Update(MD5Data *data, u8 *input, u64 inputLen) {
     u64 i = 0;
 
     data->bitsCount += inputLen * 8;
-    if (inputLen > 64) {
-        for (i = 0; i < (inputLen - 64); i += 64) {
+    if (inputLen >= 64) {
+        for (i = 0; i <= (inputLen - 64); i += 64) {
             memcpy((char *)data->buffer, (char *)&input[i], 64);
             processStates(data);
         }

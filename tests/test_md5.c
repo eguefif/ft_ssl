@@ -14,6 +14,18 @@ void toHexDigest(char *hexdigest, unsigned char *digest) {
         sprintf(&hexdigest[i * 2], "%02x", digest[i]);
     }
 }
+void testMd5Exactly64(void) {
+    char *target =
+        "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean";
+    char *expected = "2172f297164df75abb9c2d71b1003350";
+
+    u8 result[16];
+    calculateMD5(result, (u8 *)target);
+
+    char hexdigest[32];
+    toHexDigest(hexdigest, result);
+    CU_ASSERT(strncmp(hexdigest, expected, 32) == 0);
+}
 void testMd5GreaterThan64(void) {
     char *target =
         "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean.";
@@ -73,6 +85,7 @@ int main() {
 
     CU_add_test(suite, "Test of when target greater than 64",
                 testMd5GreaterThan64);
+    CU_add_test(suite, "Test of when target exactly 64", testMd5Exactly64);
     CU_basic_run_tests();
     CU_cleanup_registry();
     return 0;
