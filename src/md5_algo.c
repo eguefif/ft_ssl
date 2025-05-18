@@ -31,7 +31,7 @@ void md5Update(MD5Data *data, u8 *input, u64 inputLen) {
 
     data->bitsCount += inputLen * 8;
     if (inputLen > 64) {
-        for (i = 0; i < inputLen; i += 64) {
+        for (i = 0; i < (inputLen - 64); i += 64) {
             strncpy((char *)data->buffer, (char *)&input[i], 64);
             processStates(data);
         }
@@ -84,20 +84,6 @@ void u32ArrayToChar(u8 *output, u32 *input, u64 len) {
     }
 }
 
-void printStates(u32 *states) {
-    u8 b[4];
-
-    printf("\n");
-    for (int i = 0; i < 4; i++) {
-        u32ArrayToChar(b, &states[i], 1);
-        for (int j = 0; j < 4; j++) {
-            printf("%02x ", b[j]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
 void processStates(MD5Data *data) {
     u32 block[16];
     charToU32Array(block, data->buffer, 16);
@@ -105,7 +91,6 @@ void processStates(MD5Data *data) {
     u32 b = data->states[1];
     u32 c = data->states[2];
     u32 d = data->states[3];
-    // printStates(data->states);
 
     round1(&a, &b, &c, &d, block);
     round2(&a, &b, &c, &d, block);
@@ -116,8 +101,6 @@ void processStates(MD5Data *data) {
     data->states[1] += b;
     data->states[2] += c;
     data->states[3] += d;
-
-    // printStates(data->states);
 }
 
 void round1(u32 *a, u32 *b, u32 *c, u32 *d, u32 *block) {
