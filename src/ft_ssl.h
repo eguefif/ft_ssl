@@ -25,7 +25,7 @@ void printInvalidCommandError(char *command);
 void runMD5(Params params);
 
 void calculateMD5(u8 *digest, u8 *target);
-void runSHA256(Params params);
+void calculateSHA256(u8 *digest, u8 *target);
 
 void getTarget(u8 *content, char *target);
 #endif

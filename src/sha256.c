@@ -1,3 +1,3 @@
 #include "ft_ssl.h"
 
-void runSHA256(Params params) { printf("Running sha256\n"); }
+void calculateSHA256(u8 *digest, u8 *target) {}
