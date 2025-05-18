@@ -1,44 +1,6 @@
 #include "ft_ssl.h"
 
-u32 SINE_TABLE[64] = {
-    0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a,
-    0xa8304613, 0xfd469501, 0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
-    0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821, 0xf61e2562, 0xc040b340,
-    0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8,
-    0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed, 0xa9e3e905, 0xfcefa3f8,
-    0x676f02d9, 0x8d2a4c8a, 0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c,
-    0xa4beea44, 0x4bdecfa9, 0xf6bb4b60, 0xbebfbc70, 0x289b7ec6, 0xeaa127fa,
-    0xd4ef3085, 0x04881d05, 0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665,
-    0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92,
-    0xffeff47d, 0x85845dd1, 0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1,
-    0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391,
-};
-
-#define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
-#define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
-#define H(x, y, z) ((x) ^ (y) ^ (z))
-#define I(x, y, z) ((y) ^ ((x) | (~z)))
-#define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
-
-#define S11 7
-#define S12 12
-#define S13 17
-#define S14 22
-
-#define S21 5
-#define S22 9
-#define S23 14
-#define S24 20
-
-#define S31 4
-#define S32 11
-#define S33 16
-#define S34 23
-
-#define S41 6
-#define S42 10
-#define S43 15
-#define S44 21
+void u32ArrayToChar(u8 *output, u32 *input, u64 len);
 
 void round1op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
 void round2op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
@@ -48,38 +10,102 @@ void round1(u32 *, u32 *, u32 *, u32 *, u32 *);
 void round2(u32 *, u32 *, u32 *, u32 *, u32 *);
 void round3(u32 *, u32 *, u32 *, u32 *, u32 *);
 void round4(u32 *, u32 *, u32 *, u32 *, u32 *);
-void processStates(u32 *states, u32 *block);
+void processStates(MD5Data *data);
+void encode(u32 *output, char *input, u64 len);
 
-void makeDigestFromPaddedTarget(char *digest, MD5Data *data) {
-    assert(data->paddedTargetSize * 8 % 512 == 0);
-    bzero(digest, 16);
-    u32 states[4] = {0x01234567, 0x89abcdef, 0xfedcba98, 0x76543210};
-    u32 block[32] = {0};
-    u32 *targetByWords = (u32 *)data->target;
-    for (u64 i = 0; i < data->paddedTargetSize / 2; i += 16) {
-        for (u64 j = 0; j < 16; j++) {
-            block[j] = data->target[i * 16 + j];
-        }
-        processStates(states, block);
-    }
-    makeOutput(digest, states);
+MD5Data md5Init() {
+    MD5Data data;
+
+    data.states[0] = 0x67452301;
+    data.states[1] = 0xefcdab89;
+    data.states[2] = 0x98badcfe;
+    data.states[3] = 0x10325476;
+    bzero(data.buffer, 64);
+    data.bitsCount = 0;
+
+    return data;
 }
 
-void processStates(u32 *states, u32 *block) {
-    u32 a = states[0];
-    u32 b = states[1];
-    u32 c = states[2];
-    u32 d = states[3];
+void md5Update(MD5Data *data, u8 *input, u64 inputLen) {
+    u64 i = 0;
+
+    data->bitsCount += inputLen * 8;
+    if (inputLen > 64) {
+        for (i = 0; i < inputLen; i += 64) {
+            strncpy((char *)data->buffer, (char *)&input[i], 64);
+            processStates(data);
+        }
+    } else
+        i = 0;
+
+    data->index = inputLen - i;
+    strncpy((char *)data->buffer, (char *)&input[i], inputLen - i);
+}
+
+void md5Finalize(MD5Data *data, u8 *digest) {
+
+    memset(&data->buffer[data->index], 0, 64 - data->index);
+    data->buffer[data->index] = 0x80;
+    u32 length[2];
+    length[0] = data->bitsCount & 0xFFFF;
+    length[1] = (data->bitsCount >> 32) & 0xFFFF;
+    u32ArrayToChar(&data->buffer[56], length, 2);
+    processStates(data);
+    u32ArrayToChar(digest, data->states, 4);
+}
+
+void charToU32Array(u32 *output, u8 *input, u64 len) {
+    u64 i, j;
+    for (i = 0, j = 0; i < len; i++, j += 4) {
+        output[i] = ((u32)input[j]) | (((u32)input[j + 1]) << 8) |
+                    (((u32)input[j + 2]) << 16) | (((u32)input[j + 3]) << 24);
+    }
+}
+
+void u32ArrayToChar(u8 *output, u32 *input, u64 len) {
+    u64 i, j;
+    for (i = 0, j = 0; j < len; j++, i += 4) {
+        output[i] = (unsigned char)(input[j] & 0xFF);
+        output[i + 1] = (unsigned char)((input[j] >> 8) & 0xFF);
+        output[i + 2] = (unsigned char)((input[j] >> 16) & 0xFF);
+        output[i + 3] = (unsigned char)((input[j] >> 24) & 0xFF);
+    }
+}
+
+void printStates(u32 *states) {
+    u8 b[4];
+
+    printf("\n");
+    for (int i = 0; i < 4; i++) {
+        u32ArrayToChar(b, &states[i], 1);
+        for (int j = 0; j < 4; j++) {
+            printf("%02x ", b[j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+void processStates(MD5Data *data) {
+    u32 block[16];
+    charToU32Array(block, data->buffer, 16);
+    u32 a = data->states[0];
+    u32 b = data->states[1];
+    u32 c = data->states[2];
+    u32 d = data->states[3];
+    printStates(data->states);
 
     round1(&a, &b, &c, &d, block);
     round2(&a, &b, &c, &d, block);
     round3(&a, &b, &c, &d, block);
     round4(&a, &b, &c, &d, block);
 
-    states[0] += a;
-    states[1] += b;
-    states[2] += c;
-    states[3] += d;
+    data->states[0] += a;
+    data->states[1] += b;
+    data->states[2] += c;
+    data->states[3] += d;
+
+    printStates(data->states);
 }
 
 void round1(u32 *a, u32 *b, u32 *c, u32 *d, u32 *block) {
@@ -105,7 +131,7 @@ void round1(u32 *a, u32 *b, u32 *c, u32 *d, u32 *block) {
 }
 
 void round1op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, u32 *block) {
-    *a += F(b, c, d) + block[k] + SINE_TABLE[i];
+    *a += F(b, c, d) + block[k] + SINE_TABLE[i - 1];
     *a = ROTATE_LEFT(*a, s);
     *a += b;
 }
@@ -133,7 +159,7 @@ void round2(u32 *a, u32 *b, u32 *c, u32 *d, u32 *block) {
 }
 
 void round2op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, u32 *block) {
-    *a += G(b, c, d) + block[k] + SINE_TABLE[i];
+    *a += G(b, c, d) + block[k] + SINE_TABLE[i - 1];
     *a = ROTATE_LEFT(*a, s);
     *a += b;
 }
@@ -161,7 +187,7 @@ void round3(u32 *a, u32 *b, u32 *c, u32 *d, u32 *block) {
 }
 
 void round3op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, u32 *block) {
-    *a += H(b, c, d) + block[k] + SINE_TABLE[i];
+    *a += H(b, c, d) + block[k] + SINE_TABLE[i - 1];
     *a = ROTATE_LEFT(*a, s);
     *a += b;
 }
@@ -189,15 +215,7 @@ void round4(u32 *a, u32 *b, u32 *c, u32 *d, u32 *block) {
 }
 
 void round4op(u32 *a, u32 b, u32 c, u32 d, u32 k, u32 s, u32 i, u32 *block) {
-    *a += I(b, c, d) + block[k] + SINE_TABLE[i];
+    *a += I(b, c, d) + block[k] + SINE_TABLE[i - 1];
     *a = ROTATE_LEFT(*a, s);
     *a += b;
-}
-
-void makeOutput(char *digest, u32 *states) {
-    for (u8 i = 0; i < 4; i++) {
-        u16 lower = (u16)(states[i] & 0xFFFF);
-        u16 higher = (u16)((states[i] & 0xFFFF0000) >> 16);
-        sprintf(digest + i * 8, "%04x%04x", lower, higher);
-    }
 }

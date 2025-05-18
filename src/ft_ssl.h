@@ -21,6 +21,6 @@ void printInvalidCommandError(char *command);
 
 void runMD5(Params params);
 
-void calculateMD5(char *digest, char *target);
+void calculateMD5(u8 *digest, u8 *target);
 void runSHA256(Params params);
 #endif
