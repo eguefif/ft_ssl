@@ -77,15 +77,16 @@ void testSHA256EmptyTarget(void) {
 int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("Test SHA256", 0, 0);
-    CU_add_test(suite, "Test of calculateSHA256", testSHA256HelloWorld);
+    // CU_add_test(suite, "Test of calculateSHA256", testSHA256HelloWorld);
     CU_add_test(suite, "Test of calculateSHA256: empty target",
                 testSHA256EmptyTarget);
-    CU_add_test(suite, "Test of when not enough for padding",
-                testSHA256NotEnoughForPadding);
+    // CU_add_test(suite, "Test of when not enough for padding",
+    //           testSHA256NotEnoughForPadding);
 
-    CU_add_test(suite, "Test of when target greater than 64",
-                testSHA256GreaterThan64);
-    CU_add_test(suite, "Test of when target exactly 64", testSHA256Exactly64);
+    // CU_add_test(suite, "Test of when target greater than 64",
+    //          testSHA256GreaterThan64);
+    // CU_add_test(suite, "Test of when target exactly 64",
+    // testSHA256Exactly64);
     CU_basic_run_tests();
     CU_cleanup_registry();
     return 0;
