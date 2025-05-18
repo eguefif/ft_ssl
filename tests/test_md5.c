@@ -15,7 +15,19 @@ void toHexDigest(char *hexdigest, unsigned char *digest) {
     }
 }
 
-void testMd5(void) {
+void testMd5NotEnoughForPadding(void) {
+    char *target = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
+    char *expected = "a84e9dae73341f1e9764f349701a5adf";
+
+    u8 result[16];
+    calculateMD5(result, (u8 *)target);
+
+    char hexdigest[32];
+    toHexDigest(hexdigest, result);
+    CU_ASSERT(strncmp(hexdigest, expected, 16) == 0);
+}
+
+void testMd5HelloWorld(void) {
     char *target = "Hello, world!";
     char *expected = "6cd3556deb0da54bca060b4c39479839";
 
@@ -41,9 +53,11 @@ void testMd5EmptyTarget(void) {
 int main() {
     CU_initialize_registry();
     CU_pSuite suite = CU_add_suite("Test MD5", 0, 0);
-    CU_add_test(suite, "Test of calculateMD5", testMd5);
+    CU_add_test(suite, "Test of calculateMD5", testMd5HelloWorld);
     CU_add_test(suite, "Test of calculateMD5: empty target",
                 testMd5EmptyTarget);
+    CU_add_test(suite, "Test of when not enough for padding",
+                testMd5NotEnoughForPadding);
     CU_basic_run_tests();
     CU_cleanup_registry();
     return 0;

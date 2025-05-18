@@ -43,15 +43,27 @@ void md5Update(MD5Data *data, u8 *input, u64 inputLen) {
 }
 
 void md5Finalize(MD5Data *data, u8 *digest) {
-
     memset(&data->buffer[data->index], 0, 64 - data->index);
-    data->buffer[data->index] = 0x80;
-    u32 length[2];
-    length[0] = data->bitsCount & 0xFFFF;
-    length[1] = (data->bitsCount >> 32) & 0xFFFF;
-    u32ArrayToChar(&data->buffer[56], length, 2);
-    processStates(data);
-    u32ArrayToChar(digest, data->states, 4);
+    int remaining = 64 - data->index;
+    if (remaining > 0 && remaining < 9) {
+        data->buffer[data->index] = 0x80;
+        u32 length[2];
+        processStates(data);
+        memset(data->buffer, 0, 64);
+        length[0] = data->bitsCount & 0xFFFF;
+        length[1] = (data->bitsCount >> 32) & 0xFFFF;
+        u32ArrayToChar(&data->buffer[56], length, 2);
+        processStates(data);
+        u32ArrayToChar(digest, data->states, 4);
+    } else {
+        data->buffer[data->index] = 0x80;
+        u32 length[2];
+        length[0] = data->bitsCount & 0xFFFF;
+        length[1] = (data->bitsCount >> 32) & 0xFFFF;
+        u32ArrayToChar(&data->buffer[56], length, 2);
+        processStates(data);
+        u32ArrayToChar(digest, data->states, 4);
+    }
 }
 
 void charToU32Array(u32 *output, u8 *input, u64 len) {
