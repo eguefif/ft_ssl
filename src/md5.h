@@ -41,5 +41,16 @@ void md5Finalize(MD5Data *data, u8 *digest);
 void makeOutput(u8 *digest, u32 *states);
 void u64ToChar(u8 *output, u64 input);
 
-extern const u32 SINE_TABLE[64];
+void u32ArrayToChar(u8 *output, u32 *input, u64 len);
+
+void round1op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
+void round2op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
+void round3op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
+void round4op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
+void round1(u32 *, u32 *, u32 *, u32 *, u32 *);
+void round2(u32 *, u32 *, u32 *, u32 *, u32 *);
+void round3(u32 *, u32 *, u32 *, u32 *, u32 *);
+void round4(u32 *, u32 *, u32 *, u32 *, u32 *);
+void processStates(MD5Data *data);
+void encode(u32 *output, char *input, u64 len);
 #endif

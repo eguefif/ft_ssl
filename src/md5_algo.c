@@ -1,18 +1,5 @@
 #include "ft_ssl.h"
 
-void u32ArrayToChar(u8 *output, u32 *input, u64 len);
-
-void round1op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
-void round2op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
-void round3op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
-void round4op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
-void round1(u32 *, u32 *, u32 *, u32 *, u32 *);
-void round2(u32 *, u32 *, u32 *, u32 *, u32 *);
-void round3(u32 *, u32 *, u32 *, u32 *, u32 *);
-void round4(u32 *, u32 *, u32 *, u32 *, u32 *);
-void processStates(MD5Data *data);
-void encode(u32 *output, char *input, u64 len);
-
 MD5Data md5Init() {
     MD5Data data;
 
