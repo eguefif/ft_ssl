@@ -1,5 +1,8 @@
 #include "ft_ssl.h"
 
+void displayResult(u8 *digest, Params params, u64 hashSize);
+void printHashAlgo(i64 algo);
+
 int main(int argc, char **argv) {
     if (argc <= 1 || argc > 7) {
         printf("usage: ft_ssl command [flag] [file/string]\n");
@@ -37,20 +40,37 @@ void runHash(Params params) {
     case MD5:
         hashSize = 16;
         hashFunction = &calculateMD5;
-        printf("MD5");
         break;
     case SHA256:
         hashSize = 32;
         hashFunction = &calculateSHA256;
-        printf("SHA256");
         break;
     }
     getTarget(target, params.target);
-    if (params.flags.p) {
-        printf("(\"%s\") ", target);
-    }
     u8 digest[hashSize];
     hashFunction(digest, target);
-    printHash(digest, hashSize);
+    displayResult(digest, params, hashSize);
+}
+
+void displayResult(u8 *digest, Params params, u64 hashSize) {
+    if (params.flags.r) {
+        printHash(digest, hashSize);
+        printf(" *%s", params.target);
+    } else {
+        printHashAlgo(params.command);
+        printf("(%s)=", params.target);
+        printHash(digest, hashSize);
+    }
     printf("\n");
+}
+
+void printHashAlgo(i64 algo) {
+    switch (algo) {
+    case MD5:
+        printf("MD5");
+        break;
+    case SHA256:
+        printf("SHA2-256");
+        break;
+    }
 }

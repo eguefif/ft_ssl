@@ -8,7 +8,6 @@ Params parseParams(i64 argc, char **argv) {
     params.command = getCommand(argv[1]);
     params.commandValue = argv[1];
     if (argc > 2) {
-
         for (i64 i = 2; i < argc; i++) {
             if (argv[i] == 0) {
                 break;
@@ -16,9 +15,15 @@ Params parseParams(i64 argc, char **argv) {
             if (argv[i][0] == '-') {
                 parseFlags(argv[i], &(params.flags));
             } else {
-                params.target = argv[i];
+                u64 argvLen = strlen(argv[i]);
+                u64 len =
+                    argvLen < MAX_FILENAME_SIZE ? argvLen : MAX_FILENAME_SIZE;
+                memcpy(params.target, argv[i], len);
             }
         }
+    }
+    if (params.target[0] == 0) {
+        memcpy(params.target, "stdin", 5);
     }
     return params;
 }

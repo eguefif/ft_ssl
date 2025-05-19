@@ -4,6 +4,8 @@
 #define true 1
 #define false 0
 
+#define MAX_FILENAME_SIZE 1000
+
 typedef uint8_t boolean;
 typedef uint64_t u64;
 typedef uint32_t u32;
@@ -26,6 +28,6 @@ typedef struct {
     i64 command;
     char *commandValue;
     Flags flags;
-    char *target;
+    char target[MAX_FILENAME_SIZE];
 } Params;
 #endif
