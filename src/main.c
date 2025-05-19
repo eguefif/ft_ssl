@@ -1,6 +1,6 @@
 #include "ft_ssl.h"
 
-void displayResult(u8 *digest, Params params, u64 hashSize);
+void displayResult(u8 *digest, Params params, u64 hashSize, u8 *content);
 void printHashAlgo(i64 algo);
 
 int main(int argc, char **argv) {
@@ -33,7 +33,7 @@ void printHash(u8 *digest, u64 len) {
 }
 
 void runHash(Params params) {
-    u8 target[TARGET_MAX_SIZE];
+    u8 content[TARGET_MAX_SIZE];
     u64 hashSize = 0;
     void (*hashFunction)(u8 *, u8 *) = 0;
     switch (params.command) {
@@ -46,14 +46,19 @@ void runHash(Params params) {
         hashFunction = &calculateSHA256;
         break;
     }
-    getTarget(target, params.target);
+    getTarget(content, params.target);
     u8 digest[hashSize];
-    hashFunction(digest, target);
-    displayResult(digest, params, hashSize);
+    hashFunction(digest, content);
+    displayResult(digest, params, hashSize, content);
 }
 
-void displayResult(u8 *digest, Params params, u64 hashSize) {
-    if (params.flags.r) {
+void displayResult(u8 *digest, Params params, u64 hashSize, u8 *content) {
+    if (params.flags.q) {
+        printHash(digest, hashSize);
+    } else if (params.flags.p) {
+        printf("(\"%s\")=", content);
+        printHash(digest, hashSize);
+    } else if (params.flags.r) {
         printHash(digest, hashSize);
         printf(" *%s", params.target);
     } else {
