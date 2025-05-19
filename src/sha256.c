@@ -1,7 +1,7 @@
 #include "sha256.h"
 #include "ft_ssl.h"
 
-const u32 CONST[64] = {
+const u32 K[64] = {
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
     0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
     0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
@@ -16,8 +16,13 @@ const u32 CONST[64] = {
 };
 
 void sha256Process(SHA256Context *ctx);
+void initMessageSchedule(u32 *w, u32 *block);
 
-void calculateSHA256(u8 *digest, u8 *target) {}
+void calculateSHA256(u8 *digest, u8 *target) {
+    SHA256Context ctx = sha256Init();
+    sha256Update(&ctx, target, strlen((char *)target));
+    sha256Finalize(&ctx, digest);
+}
 
 SHA256Context sha256Init() {
     SHA256Context ctx;
@@ -69,4 +74,45 @@ void sha256Finalize(SHA256Context *ctx, u8 *digest) {
     u32ArrayToChar(digest, ctx->states, 8);
 }
 
-void sha256Process(SHA256Context *ctx) {}
+void sha256Process(SHA256Context *ctx) {
+    u32 block[16];
+    charToU32Array(block, ctx->buffer, 16);
+    u32 w[64];
+    initMessageSchedule(w, block);
+    u32 a = ctx->states[0], b = ctx->states[1], c = ctx->states[2],
+        d = ctx->states[3], e = ctx->states[4], f = ctx->states[5],
+        g = ctx->states[6], h = ctx->states[7];
+
+    u32 t1 = 0;
+    u32 t2 = 0;
+    for (int t = 0; t < 64; t++) {
+        t1 = h + BSIG1(e) + CH(e, f, g) + K[t] + w[t];
+        t2 = BSIG0(a) + MAJ(a, b, c);
+        h = g;
+        g = f;
+        f = e;
+        e = d + t1;
+        d = c;
+        c = b;
+        b = a;
+        a = t1 + t2;
+    }
+
+    ctx->states[0] = ctx->states[0] + a;
+    ctx->states[1] = ctx->states[1] + b;
+    ctx->states[2] = ctx->states[2] + c;
+    ctx->states[3] = ctx->states[3] + d;
+    ctx->states[4] = ctx->states[4] + e;
+    ctx->states[5] = ctx->states[5] + f;
+    ctx->states[6] = ctx->states[6] + g;
+    ctx->states[7] = ctx->states[7] + h;
+}
+
+void initMessageSchedule(u32 *w, u32 *block) {
+    for (int i = 0; i < 16; i++) {
+        w[i] = block[i];
+    }
+    for (int i = 16; i < 64; i++) {
+        w[i] = SSIG1(w[i - 2]) + w[i - 7] + SSIG0(w[i - 15]) + w[i - 16];
+    }
+}

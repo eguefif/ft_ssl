@@ -31,4 +31,5 @@ void getTarget(u8 *content, char *target);
 
 void u64ToChar(u8 *output, u64 input);
 void u32ArrayToChar(u8 *output, u32 *input, u64 len);
+void charToU32Array(u32 *output, u8 *input, u64 len);
 #endif

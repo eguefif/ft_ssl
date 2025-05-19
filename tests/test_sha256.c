@@ -22,8 +22,9 @@ void testSHA256Exactly64(void) {
     u8 result[32];
     calculateSHA256(result, (u8 *)target);
 
-    char hexdigest[64];
+    char hexdigest[65];
     toHexDigest(hexdigest, result);
+
     CU_ASSERT(strncmp(hexdigest, expected, 64) == 0);
 }
 void testSHA256GreaterThan64(void) {
@@ -65,12 +66,16 @@ void testSHA256HelloWorld(void) {
 
 void testSHA256EmptyTarget(void) {
     char *target = "";
-    char *expected = "d41d8cd98f00b204e9800998ecf8427e";
+    char *expected =
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
     u8 result[32];
     calculateSHA256(result, (u8 *)target);
-    char hexdigest[64];
+    char hexdigest[65];
     toHexDigest(hexdigest, result);
+    hexdigest[64] = 0;
+    printf("digest  : %s\n", hexdigest);
+    printf("expected: %s\n", expected);
     CU_ASSERT(strncmp(hexdigest, expected, 64) == 0);
 }
 
