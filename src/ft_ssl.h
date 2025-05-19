@@ -8,7 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 #define EXIT_FAILURE 1
-#define TARGET_MAX_SIZE 5000
+#define TARGET_MAX_SIZE 50000
 
 #define MD5 0
 #define SHA256 1

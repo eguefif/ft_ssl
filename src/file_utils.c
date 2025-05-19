@@ -19,12 +19,10 @@ void getParamContent(u8 *target, char *param) {
 }
 
 void getTarget(u8 *content, char *target) {
-    if (target == 0) {
+    if (strncmp(target, "stdin", 5) == 0) {
         getStdin(content);
-        printf("(stdin) = ");
     } else {
         if (access(target, F_OK) == 0) {
-            printf("(%s) = ", target);
             getFile(content, target);
         } else {
             getParamContent(content, target);
