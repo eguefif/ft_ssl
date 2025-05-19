@@ -69,14 +69,14 @@ void sha256Finalize(SHA256Context *ctx, u8 *digest) {
     u32 length[2];
     length[0] = ctx->bitsCount & 0xFFFFFFFF;
     length[1] = (ctx->bitsCount >> 32) & 0xFFFFFFFF;
-    u32ArrayToChar(&ctx->buffer[64 - 8], length, 2);
+    u32ArrayToCharBE(&ctx->buffer[64 - 8], length, 2);
     sha256Process(ctx);
-    u32ArrayToChar(digest, ctx->states, 8);
+    u32ArrayToCharBE(digest, ctx->states, 8);
 }
 
 void sha256Process(SHA256Context *ctx) {
     u32 block[16];
-    charToU32Array(block, ctx->buffer, 16);
+    charToU32ArrayBE(block, ctx->buffer, 16);
     u32 w[64];
     initMessageSchedule(w, block);
     u32 a = ctx->states[0], b = ctx->states[1], c = ctx->states[2],
@@ -86,26 +86,26 @@ void sha256Process(SHA256Context *ctx) {
     u32 t1 = 0;
     u32 t2 = 0;
     for (int t = 0; t < 64; t++) {
-        t1 = h + BSIG1(e) + CH(e, f, g) + K[t] + w[t];
-        t2 = BSIG0(a) + MAJ(a, b, c);
+        t1 = (h + BSIG1(e) + CH(e, f, g) + K[t] + w[t]) % MAX_U32;
+        t2 = (BSIG0(a) + MAJ(a, b, c)) % MAX_U32;
         h = g;
         g = f;
         f = e;
-        e = d + t1;
+        e = (d + t1) % MAX_U32;
         d = c;
         c = b;
         b = a;
-        a = t1 + t2;
+        a = (t1 + t2) % MAX_U32;
     }
 
-    ctx->states[0] = ctx->states[0] + a;
-    ctx->states[1] = ctx->states[1] + b;
-    ctx->states[2] = ctx->states[2] + c;
-    ctx->states[3] = ctx->states[3] + d;
-    ctx->states[4] = ctx->states[4] + e;
-    ctx->states[5] = ctx->states[5] + f;
-    ctx->states[6] = ctx->states[6] + g;
-    ctx->states[7] = ctx->states[7] + h;
+    ctx->states[0] = (ctx->states[0] + a) % MAX_U32;
+    ctx->states[1] = (ctx->states[1] + b) % MAX_U32;
+    ctx->states[2] = (ctx->states[2] + c) % MAX_U32;
+    ctx->states[3] = (ctx->states[3] + d) % MAX_U32;
+    ctx->states[4] = (ctx->states[4] + e) % MAX_U32;
+    ctx->states[5] = (ctx->states[5] + f) % MAX_U32;
+    ctx->states[6] = (ctx->states[6] + g) % MAX_U32;
+    ctx->states[7] = (ctx->states[7] + h) % MAX_U32;
 }
 
 void initMessageSchedule(u32 *w, u32 *block) {
@@ -113,6 +113,7 @@ void initMessageSchedule(u32 *w, u32 *block) {
         w[i] = block[i];
     }
     for (int i = 16; i < 64; i++) {
-        w[i] = SSIG1(w[i - 2]) + w[i - 7] + SSIG0(w[i - 15]) + w[i - 16];
+        w[i] = (SSIG1(w[i - 2]) + w[i - 7] + SSIG0(w[i - 15]) + w[i - 16]) %
+               MAX_U32;
     }
 }
