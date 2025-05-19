@@ -10,7 +10,7 @@
 #define BSIG1(X) (ROTR(X, 6) ^ ROTR(X, 11) ^ ROTR(X, 25))
 #define SSIG0(X) (ROTR(X, 7) ^ ROTR(X, 18) ^ ((X) >> 3))
 #define SSIG1(X) (ROTR(X, 17) ^ ROTR(X, 19) ^ ((X) >> 10))
-#define MAX_U32 ((u32)pow(2, 32))
+#define MAX_U32 4294967295
 
 typedef struct {
     u32 states[8];

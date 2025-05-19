@@ -67,8 +67,10 @@ void sha256Finalize(SHA256Context *ctx, u8 *digest) {
         memset(ctx->buffer, 0, 64);
     }
     u32 length[2];
-    length[0] = ctx->bitsCount & 0xFFFFFFFF;
-    length[1] = (ctx->bitsCount >> 32) & 0xFFFFFFFF;
+    // u64 is in little-endian, we need to reverse the size to write
+    // the size in big-endian in the padding
+    length[1] = ctx->bitsCount & 0xFFFFFFFF;
+    length[0] = (ctx->bitsCount >> 32) & 0xFFFFFFFF;
     u32ArrayToCharBE(&ctx->buffer[64 - 8], length, 2);
     sha256Process(ctx);
     u32ArrayToCharBE(digest, ctx->states, 8);
