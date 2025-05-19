@@ -32,12 +32,17 @@ void printHash(u8 *digest, u64 len) {
 void runHash(Params params) {
     u8 target[TARGET_MAX_SIZE];
     u64 hashSize = 0;
-    void (*hashFunction)(u8 *, u8 *);
+    void (*hashFunction)(u8 *, u8 *) = 0;
     switch (params.command) {
     case MD5:
         hashSize = 16;
         hashFunction = &calculateMD5;
         printf("MD5");
+        break;
+    case SHA256:
+        hashSize = 32;
+        hashFunction = &calculateSHA256;
+        printf("SHA256");
         break;
     }
     getTarget(target, params.target);

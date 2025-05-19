@@ -38,11 +38,6 @@ MD5Data md5Init();
 void md5Update(MD5Data *data, u8 *input, u64 inputLen);
 void md5Finalize(MD5Data *data, u8 *digest);
 
-void makeOutput(u8 *digest, u32 *states);
-void u64ToChar(u8 *output, u64 input);
-
-void u32ArrayToChar(u8 *output, u32 *input, u64 len);
-
 void round1op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
 void round2op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
 void round3op(u32 *, u32, u32, u32, u32, u32, u32, u32 *);
